@@ -1,13 +1,3 @@
-BootStrap: docker
-From: mariadb:10.3
-
-%runscript
-    echo "Starting mariadb"
-    mysqld_safe
-
-%post
-
-
 BootStrap: debootstrap
 OSVersion: trusty
 MirrorURL: http://us.archive.ubuntu.com/ubuntu/
@@ -18,7 +8,11 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
 
 %post
-    echo "Hello from inside the container"
     sed -i 's/$/ universe/' /etc/apt/sources.list
-    apt-get -y --force-yes install vim
-
+    apt-get update
+    cat > /usr/sbin/policy-rc.d < < EOF
+    #!/bin/sh
+    echo "runlevel denied" >&2
+    exit 101
+    EOF
+    apt-get install -y mariadb-server-5.5
