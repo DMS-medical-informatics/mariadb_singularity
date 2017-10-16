@@ -1,0 +1,24 @@
+BootStrap: docker
+From: mariadb:10.3
+
+%runscript
+    echo "Starting mariadb"
+    mysqld_safe
+
+%post
+
+
+BootStrap: debootstrap
+OSVersion: trusty
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+
+
+%runscript
+    echo "This is what happens when you run the container..."
+
+
+%post
+    echo "Hello from inside the container"
+    sed -i 's/$/ universe/' /etc/apt/sources.list
+    apt-get -y --force-yes install vim
+
