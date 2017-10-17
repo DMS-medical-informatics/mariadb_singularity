@@ -13,3 +13,4 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     echo exit 101 > /usr/sbin/policy-rc.d
     chmod +x /usr/sbin/policy-rc.d
     apt-get install -y mariadb-server-5.5
+    rm /usr/sbin/policy-rc.d
