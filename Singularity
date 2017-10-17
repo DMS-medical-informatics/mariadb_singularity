@@ -10,9 +10,6 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 %post
     sed -i 's/$/ universe/' /etc/apt/sources.list
     apt-get update
-    cat > /usr/sbin/policy-rc.d < < EOF
-    #!/bin/sh
-    echo "runlevel denied" >&2
-    exit 101
-    EOF
+    echo exit 101 > /usr/sbin/policy-rc.d
+    chmod +x /usr/sbin/policy-rc.d
     apt-get install -y mariadb-server-5.5
