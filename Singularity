@@ -1,6 +1,5 @@
-BootStrap: debootstrap
-OSVersion: trusty
-MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+BootStrap: docker
+From: mariadb:10.0
 
 
 %runscript
@@ -8,9 +7,9 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 
 
 %post
-    sed -i 's/$/ universe/' /etc/apt/sources.list
-    apt-get update
-    echo exit 101 > /usr/sbin/policy-rc.d
-    chmod +x /usr/sbin/policy-rc.d
-    apt-get install -y mariadb-server-5.5
-    rm /usr/sbin/policy-rc.d
+	mount /scratch 
+	sed -i  's/\/var\/lib/\/scratch\/lib/g' my.cnf
+	sed -i  's/\/var\/log/\/scratch\/log/g' my.cnf
+	sed -i  's/\/var\/run/\/scratch\/run/g' my.cnf
+	sed -i  's/\/var\/lib/\/scratch\/lib/g' my.cnf
+	sed -i  's/\/tmp/\/scratch\/tmp/g' my.cnf
