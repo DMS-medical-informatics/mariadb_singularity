@@ -3,14 +3,13 @@ From: adgud2/ruby-rvm:lite
 
 
 %runscript
-	source /etc/profile.d/rvm.sh
-	rvm use 2.2.4
 	echo "create database cbrain_dev;" >> sqlsetup
-	echo "create user     'cbrain'@'localhost' identified by 'cbrain';" >> sqlsetup
+	echo "create user     'cbrain'@'127.0.0.1' identified by 'cbrain';" >> sqlsetup
 	echo "grant all on cbrain_dev.* to 'cbrain'@'localhost';" >> sqlsetup
 	mysql -h localhost -u root  --protocol tcp < sqlsetup > /dev/null
 	rm sqlsetup
-	cd /home/cbrain/cbrain/BrainPortal
+	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin
+	cd /home/cbrain/cbrain/BrainPortal 
 	rake cbrain:plugins:install:all
 
 
@@ -18,24 +17,29 @@ From: adgud2/ruby-rvm:lite
 %post
 	apt-get -y update
 	apt-get -y install debianutils coreutils openssh-client libmysqlclient-dev libxml2 libxml2-dev mysql-client && rm -rf /var/lib/apt/lists/*
-	/usr/local/rvm/bin/rvm install 2.2.4
 	mkdir -p /home/cbrain
 	cd /home/cbrain
 	git clone https://github.com/aces/cbrain.git
 	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin
-	echo 'export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin' >> $SINGULARITY_ENVIRONMENT
-	gem install bundler
+	echo '. /etc/profile.d/rvm.sh' >> $SINGULARITY_ENVIRONMENT
 	cd cbrain/BrainPortal
 	groupadd -g 1500 cbrain
 	useradd -u 1500 -g 1000 cbrain
+	echo 'cbrain:cbrain' | chpasswd 
 	chown -R cbrain /home/cbrain
+	su cbrain -c '. /etc/profile.d/rvm.sh && rvm install 2.2.4'
 	chmod go+rw /usr/local/rvm/rubies/ruby-2.2.4/lib/ruby/gems/2.2.0/cache
 	chmod -R go+rwX /usr/local/rvm/rubies/ruby-2.2.4/
-	su cbrain -c 'PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin bundle install'
+	su cbrain -c '. /etc/profile.d/rvm.sh && rvm use 2.2.4 && gem install bundler'
+	su cbrain -c '. /etc/profile.d/rvm.sh && rvm use 2.2.4 && bundle install'
 	cd config
 	cp database.yml.TEMPLATE database.yml
 	sed -i 's/database: cbrain_db_name_here/database: cbrain/g' database.yml
 	sed -i 's/username: cbrain_db_user_name_here/username: cbrain/g' database.yml
 	sed -i 's/password: cbrain_db_user_pw_here/password: cbrain/g' database.yml
+	sed -i 's/host: localhost/host: 127.0.0.1/g' database.yml
 	chown -R cbrain /home/cbrain/cbrain
 	chgrp -R cbrain /home/cbrain
+	chmod -R go+rwX /home/cbrain
+	cd /home/cbrain/cbrain/BrainPortal/config/initializers
+	cat config_portal.rb.TEMPLATE | sed 's/CBRAIN_RAILS_APP_NAME = "simple_name"/CBRAIN_RAILS_APP_NAME = "sing"/g' > config_portal.rb
