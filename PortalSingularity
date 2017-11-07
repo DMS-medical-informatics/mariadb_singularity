@@ -5,7 +5,7 @@ From: adgud2/ruby-rvm:lite
 %runscript
 	echo "create database cbrain;" >> sqlsetup
 	echo "create user     'cbrain'@'127.0.0.1' identified by 'cbrain';" >> sqlsetup
-	echo "grant all on cbrain.* to 'cbrain'@'localhost';" >> sqlsetup
+	echo "grant all on cbrain.* to 'cbrain'@'127.0.0.1';" >> sqlsetup
 	mysql -h localhost -u root  --protocol tcp < sqlsetup > /dev/null
 	rm sqlsetup
 	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin
@@ -13,6 +13,7 @@ From: adgud2/ruby-rvm:lite
 	cd /home/cbrain/cbrain/BrainPortal 
 	mkdir /home/cbrain/cbrain/BrainPortal/config/initializers
 	cp -R /home/cbrain/cbrain/BrainPortal/config/initializers.bak/* /home/cbrain/cbrain/BrainPortal/config/initializers
+	bundle install
 	rake cbrain:plugins:install:all
 	rake db:schema:load RAILS_ENV=development
 	rake db:seed RAILS_ENV=development
