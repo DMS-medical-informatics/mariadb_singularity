@@ -3,14 +3,21 @@ From: adgud2/ruby-rvm:lite
 
 
 %runscript
-	echo "create database cbrain_dev;" >> sqlsetup
+	echo "create database cbrain;" >> sqlsetup
 	echo "create user     'cbrain'@'127.0.0.1' identified by 'cbrain';" >> sqlsetup
-	echo "grant all on cbrain_dev.* to 'cbrain'@'localhost';" >> sqlsetup
+	echo "grant all on cbrain.* to 'cbrain'@'localhost';" >> sqlsetup
 	mysql -h localhost -u root  --protocol tcp < sqlsetup > /dev/null
 	rm sqlsetup
 	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/bin
+	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/lib/ruby/gems/2.2.0/bin
 	cd /home/cbrain/cbrain/BrainPortal 
+	mkdir /home/cbrain/cbrain/BrainPortal/config/initializers
+	cp -R /home/cbrain/cbrain/BrainPortal/config/initializers.bak/* /home/cbrain/cbrain/BrainPortal/config/initializers
 	rake cbrain:plugins:install:all
+	rake db:schema:load RAILS_ENV=development
+	rake db:seed RAILS_ENV=development
+	rake db:sanity:check RAILS_ENV=development
+	rails server thin -e development -p 3000
 
 
 
@@ -32,6 +39,8 @@ From: adgud2/ruby-rvm:lite
 	chmod -R go+rwX /usr/local/rvm/rubies/ruby-2.2.4/
 	su cbrain -c '. /etc/profile.d/rvm.sh && rvm use 2.2.4 && gem install bundler'
 	su cbrain -c '. /etc/profile.d/rvm.sh && rvm use 2.2.4 && bundle install'
+	export PATH=$PATH:/usr/local/rvm/rubies/ruby-2.2.4/lib/ruby/gems/2.2.0/bin
+	bundle install
 	cd config
 	cp database.yml.TEMPLATE database.yml
 	sed -i 's/database: cbrain_db_name_here/database: cbrain/g' database.yml
@@ -41,5 +50,9 @@ From: adgud2/ruby-rvm:lite
 	chown -R cbrain /home/cbrain/cbrain
 	chgrp -R cbrain /home/cbrain
 	chmod -R go+rwX /home/cbrain
-	cd /home/cbrain/cbrain/BrainPortal/config/initializers
+	cd /home/cbrain/cbrain/BrainPortal/config/
+	mv initializers initializers.bak
+	cd initializers.bak
 	cat config_portal.rb.TEMPLATE | sed 's/CBRAIN_RAILS_APP_NAME = "simple_name"/CBRAIN_RAILS_APP_NAME = "sing"/g' > config_portal.rb
+	cd `bundle show sys-proctable`
+	rake install
